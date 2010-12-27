@@ -40,6 +40,4 @@ class CookieGroup
     }
     queries.join('; ')
   end
-  
-  attr_reader :path, :body
 end
