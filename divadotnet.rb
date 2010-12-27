@@ -116,6 +116,11 @@ module DivaDotNet
     def get_song_score(table)
       # init
       hash = Hash.new
+      clear_image = {
+        'clear' => "/divanet/top/img/clear1.jpg",
+        'great' => "/divanet/top/img/clear2.jpg",
+        'perfect' => "/divanet/top/img/clear3.jpg",
+      }
       trial_regexp = {
         'none' => SONG_TRIAL_NONE_REGEXP,
         'clear' => SONG_TRIAL_CLEAR_REGEXP,
@@ -124,6 +129,10 @@ module DivaDotNet
       }
       # dificulty
       hash['difficulty'] = $1 if table =~ SONG_DIFFICULTY_REGEXP
+      # clear
+      clear_image.each_pair {|key, image|
+        hash[key] = table.include?(image)
+      }
       # trial
       trial_regexp.each_pair {|key, value|
         if table =~ value then
