@@ -20,11 +20,6 @@ module DivaDotNet
     
     SONG_INFO_REGEXP = /<center>([^<]+)<img src="([^"]+)"\/><\/center>/
     SONG_TABLE_REGEXP = /<table[^>]*>.+?<\/table>/
-    SONG_EASY_REGEXP = /<b>EASY<\/b>/
-    SONG_NORMAL_REGEXP = /<b>NORMAL<\/b>/
-    SONG_HARD_REGEXP = /<b>HARD<\/b>/
-    SONG_EXTREME_REGEXP = /<b>EXTREME<\/b>/
-    SONG_CREDIT_REGEXP = /<font[^>]*>作曲者<\/font>/
     SONG_CREDIT_TD_STRING = "<td[^>]*><font[^>]*>([^<]+)<\/font><\/td>"
     SONG_CREDIT_TR_REGEXP = Regexp.new(SONG_CREDIT_TD_STRING * 2)
     
