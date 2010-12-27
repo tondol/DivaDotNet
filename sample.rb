@@ -4,8 +4,8 @@
 require 'kconv'
 require 'divadotnet'
 
-ACCESS_CODE = "01032449324545172047"
-PASSWORD = "hosa0911"
+ACCESS_CODE = "YOUR_ACCESS_CODE"
+PASSWORD = "YOUR_PASSWORD"
 
 diva = DivaDotNet.login(ACCESS_CODE, PASSWORD)
 sleep 1
