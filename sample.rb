@@ -15,5 +15,5 @@ get_song_pages = diva.get_song_pages
 sleep 1
 song = diva.get_song(get_song_pages.first)
 
-puts user.to_s.tosjis
-puts song.to_s.tosjis
+puts user.to_s
+puts song.to_s
