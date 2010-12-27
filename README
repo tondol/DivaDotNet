@@ -1,5 +1,6 @@
 DivaDotNet is a simple library to manipulate resouces on "DIVA.NET" with Ruby.
 With this library, you'll be able to get your high-scores easily.
+DivaDotNet requires Ruby 1.9.* to work.
 
 A feature of this library is that any other gems are unnecessarry.
 You simply have to put a few files into your directory to get resources on "DIVA.NET."
