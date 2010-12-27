@@ -36,9 +36,9 @@ class CookieGroup
     queries = []
     @cookies.each {|cookie|
       regexp = Regexp.new('^' + cookie['path'])
-      queries << (cookie['name'] + '=' + cookie['value'])if path =~ regexp
+      queries << (cookie['name'] + '=' + cookie['value']) if path =~ regexp
     }
-    queries.join(' ;')
+    queries.join('; ')
   end
   
   attr_reader :path, :body
