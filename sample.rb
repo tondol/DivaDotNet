@@ -22,7 +22,7 @@ sleep 1
 # you have to specify the summary to get song data
 summaries.each {|summary|
   name = summary['name']
-  puts "get song data (#{name})...".tosjis
-  puts diva.get_song(summary).to_s.tosjis
+  puts "get song data (#{name})..."
+  puts diva.get_song(summary).to_s
   sleep 1
 }
