@@ -73,3 +73,14 @@ class Agent
     queries.join('&')
   end
 end
+
+# force_encoding
+class String
+  def method_missing(method, *args)
+    if method == :force_encoding then
+      self
+    else
+      raise NameError
+    end
+  end
+end
