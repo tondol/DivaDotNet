@@ -98,7 +98,8 @@ module DivaDotNet
           song[key] = get_song_score(table)
           song[key]['difficulty'] = difficulty
         else
-          song['credit'] = get_song_credit(table)
+          # the implementation of this function is imcomplete
+          # song['credit'] = get_song_credit(table)
         end
       }
       # return
