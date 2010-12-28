@@ -23,19 +23,18 @@ module DivaDotNet
     SONG_CREDIT_TD_STRING = "<td[^>]*><font[^>]*>([^<]+)<\/font><\/td>"
     SONG_CREDIT_TR_REGEXP = Regexp.new(SONG_CREDIT_TD_STRING * 2)
     
-    SONG_DIFFICULTY_REGEXP = /★(\d+)/
+    SONG_DIFFICULTY_REGEXP = /<font[^>]*><b>([^<]+)<\/b>★(\d+)<\/font>/
     SONG_TRIAL_NONE_REGEXP = /<font[^>]*>NO CLEAR<\/font>/
     SONG_TRIAL_CLEAR_REGEXP = /<font[^>]*>C-TRIAL ○<\/font>/
     SONG_TRIAL_GREAT_REGEXP = /<font[^>]*>G-TRIAL ○<\/font>/
     SONG_TRIAL_PERFECT_REGEXP = /<font[^>]*>P-TRIAL ○<\/font>/
-    SONG_HIGH_ACHIVEMENT_REGEXP = /<font[^>]*>(\d+\.\d+%)<\/font>/
-    SONG_HIGH_SCORE_REGEXP = /<font[^>]*>(\d+pts)<\/font>/
+    SONG_HIGH_ACHIVEMENT_REGEXP = /<font[^>]*>(\d+\.\d+)%<\/font>/
+    SONG_HIGH_SCORE_REGEXP = /<font[^>]*>(\d+)pts<\/font>/
     
-    SONG_PAGES_INDEX_PATH = "/divanet/pv/list/0/0"
-    SONG_PAGES_INDEX_PREFIX = "/divanet/pv/list/"
-    SONG_PAGES_PREFIX = "/divanet/pv/info/"
-    SONG_PAGES_REGEXP = /#{SONG_PAGES_PREFIX}[^"]+/
-    SONG_PAGES_INDEX_REGEXP = /#{SONG_PAGES_INDEX_PREFIX}[^"]+/
+    SONG_SUMMARIES_LIST_PATH = "/divanet/pv/list/0/0"
+    SONG_SUMMARIES_LIST_PREFIX = "/divanet/pv/list/"
+    SONG_SUMMARIES_INFO_PREFIX = "/divanet/pv/info/"
+    SONG_SUMMARIES_REGEXP = /<a href="([^"]+)"[^>]*>([^<]+)<\/a>/
     
     def initialize
       @agent = Agent.new
@@ -75,12 +74,12 @@ module DivaDotNet
       user
     end
     
-    def get_song(path)
+    def get_song(anchor)
       # init
       song = Hash.new
       # get
       @agent.set_http(BASE_DOMAIN)
-      response = @agent.get(path)
+      response = @agent.get(anchor['href'])
       body = form_html(response.body)
       tables = body.scan(SONG_TABLE_REGEXP)
       # info
@@ -91,20 +90,24 @@ module DivaDotNet
         raise "Song information is missing"
       end
       # score, credit
-      table_keys = [
-        'easy', 'normal', 'hard', 'extreme',
-      ]
-      table_keys.each {|key|
-        song[key] = get_song_score(tables.shift)
+      tables.each {|table|
+        parsed = nil
+        if table =~ SONG_DIFFICULTY_REGEXP then
+          key = $1.downcase
+          difficulty = $2.to_i
+          song[key] = get_song_score(table)
+          song[key]['difficulty'] = difficulty
+        else
+          song['credit'] = get_song_credit(table)
+        end
       }
-      song['credit'] = get_song_credit(tables.shift)
       # return
       song
     end
     
-    def get_song_pages
+    def get_song_summaries
       @agent.set_http(BASE_DOMAIN)
-      get_song_pages_recursive(SONG_PAGES_INDEX_PATH, [])
+      get_song_summaries_recursive(SONG_SUMMARIES_LIST_PATH, [])
     end
     
     private
@@ -122,8 +125,6 @@ module DivaDotNet
         'great' => SONG_TRIAL_GREAT_REGEXP,
         'perfect' => SONG_TRIAL_PERFECT_REGEXP,
       }
-      # dificulty
-      hash['difficulty'] = $1 if table =~ SONG_DIFFICULTY_REGEXP
       # clear
       clear_image.each_pair {|key, image|
         hash[key] = table.include?(image)
@@ -136,8 +137,8 @@ module DivaDotNet
         end
       }
       # highscore
-      hash['high_achivement'] = $1 if table =~ SONG_HIGH_ACHIVEMENT_REGEXP
-      hash['high_score'] = $1 if table =~ SONG_HIGH_SCORE_REGEXP
+      hash['high_achivement'] = $1.to_f if table =~ SONG_HIGH_ACHIVEMENT_REGEXP
+      hash['high_score'] = $1.to_i if table =~ SONG_HIGH_SCORE_REGEXP
       # return
       hash
     end
@@ -155,20 +156,34 @@ module DivaDotNet
     end
     
     private
-    def get_song_pages_recursive(index, crawled)
+    def get_song_summaries_recursive(current, crawled)
+      # init
+      song_summaries = []
+      list_hrefs = []
       # search
-      response = @agent.get(index)
+      response = @agent.get(current)
       body = form_html(response.body)
-      song_paths = body.scan(SONG_PAGES_REGEXP)
-      index_paths = body.scan(SONG_PAGES_INDEX_REGEXP)
-      crawled << index
+      # scanning anchors
+      body.scan(SONG_SUMMARIES_REGEXP).each {|match|
+        href = match.shift
+        name = match.shift
+        if href.include?(SONG_SUMMARIES_INFO_PREFIX) then
+          song_summaries << {
+            'name' => name,
+            'href' => href,
+          }
+        elsif href.include?(SONG_SUMMARIES_LIST_PREFIX) then
+          list_hrefs << href
+        end
+      }
+      crawled << current
       # search recursive
-      index_paths.each {|path|
-        next if crawled.include?(path)
-        song_paths += get_song_pages_recursive(path, crawled)
+      list_hrefs.each {|href|
+        next if crawled.include?(href)
+        song_summaries += get_song_summaries_recursive(href, crawled)
       }
       # return
-      song_paths
+      song_summaries
     end
     
     private
